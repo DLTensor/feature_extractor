@@ -2,3 +2,5 @@ weights/*
 *.weights
 *.pth
 *.npy
+.idea/*
+*.pyc
