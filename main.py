@@ -47,7 +47,7 @@ if __name__ == '__main__':
     pic_dir, therd_size = opt.file, opt.size
     yolo_model_cfg, weights_path = opt.cfg, opt.weights
     feat_type = opt.feat_type
-    cluster_nums = opt.cluster
+    cluster_nums = opt.clusters
 
     if opt.feat:
         get_image_feature(pic_dir, therd_size, feat_type)

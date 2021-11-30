@@ -11,6 +11,9 @@ from resnet_feat_extract import load_npy
 import os
 from tqdm import tqdm
 import json
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
 
 class KMEANS:
     def __init__(self, n_cluster, epsilon=1e-3, maxstep=2000):
@@ -81,6 +84,8 @@ class KMEANS:
                 break
         return
 
+def save_labels(path, labels):
+    np.savetxt(path, labels)
 
 def save_cluster(path, dic_cluster):
     js_index_cluster = json.dumps(dic_cluster)
@@ -97,7 +102,7 @@ def load_cluster(path):
     return dic
 
 
-def get_kmean_clusters(npy_path, class_nums, save_file_path, npy_type='yolov3'):
+def get_kmean_clusters(npy_path, class_nums, save_file_path, npy_type='yolov3', show_3d=True):
     '''
 
     :param npy_path:
@@ -124,9 +129,11 @@ def get_kmean_clusters(npy_path, class_nums, save_file_path, npy_type='yolov3'):
             if not os.path.exists(image_file):
                 continue
             npy_array = load_npy(image_file)
-            flat_npy_aray = np.array(npy_array).flatten().tolist()
 
-            data_collection.append(flat_npy_aray)
+            pca_array = pca_process(npy_array)
+            flat_pca_aray = np.array(pca_array).flatten().tolist()
+
+            data_collection.append(flat_pca_aray)
             index_cluster[index] = image_file
         if len(data_collection) == 0:
             print('files not exists!')
@@ -138,23 +145,114 @@ def get_kmean_clusters(npy_path, class_nums, save_file_path, npy_type='yolov3'):
         save_cluster(index_cluster_path, index_cluster)
 
         array_collection = np.array(data_collection)
-        km = KMEANS(class_nums)
-        km.fit(array_collection)
-        cluster = km.cluster
-        # centers = np.array(km.centers)
-        print(cluster)
+
+        kmeans = KMeans(n_clusters=class_nums, random_state=0).fit(array_collection)
+        labels = kmeans.labels_
+        centers = kmeans.cluster_centers_
 
         out_cluster_path = os.path.join(save_file_path, 'out_cluster.txt')
-        save_cluster(out_cluster_path, cluster)
+        # save_cluster(out_cluster_path, labels)
+        save_labels(out_cluster_path, labels)
 
+        dict_cluster_path = os.path.join(save_file_path, 'dict_filename.txt')
+        dict_cluster = {}
         file_cluster_path = os.path.join(save_file_path, 'file_cluster.txt')
         file = open(file_cluster_path, 'w')
-        for c in cluster:
-            index_list = cluster[c]
-            for index in index_list:
-                file_name = index_cluster[index]
-                file.write(str(c) + ' ' + str(file_name) + '\n')
+        for index, c in enumerate(labels):
+            class_index = str(c)
+            if not class_index in dict_cluster:
+                dict_cluster[class_index] = []
+            file_name = index_cluster[index]
+            dict_cluster[class_index].append(file_name)
+            file.write(class_index + ' ' + str(file_name) + '\n')
         file.close()
+        save_cluster(dict_cluster_path, dict_cluster)
+        if show_3d:
+            # show(array_collection, labels)
+            show_tsne(array_collection, labels)
 
     else:
         print('please input txt file !')
+
+
+def pca_process(input, n_dims=273):
+    '''
+    n-dims=273 351
+    '''
+    n_input = input.reshape(n_dims, -1)
+    pca = PCA(n_components=1, svd_solver='arpack')
+    pca.fit(n_input)
+    X_new = pca.transform(n_input)
+    return X_new
+
+
+def show(data, labels):
+    from mpl_toolkits.mplot3d import Axes3D
+    fig = plt.figure(1, figsize=(4, 3))
+    ax = Axes3D(fig, rect=[0, 0, 0.95, 1], elev=48, azim=134)
+    ax.scatter(data[:, 3], data[:, 0], data[:, 2], c=labels.astype(float),
+               edgecolor="k")
+
+    ax.w_xaxis.set_ticklabels([])
+    ax.w_yaxis.set_ticklabels([])
+    ax.w_zaxis.set_ticklabels([])
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_zlabel("z")
+    ax.set_title('titles')
+
+    fig.show()
+
+
+def show_tsne(data, labels):
+    import numpy as np
+    import sklearn
+    from sklearn.manifold import TSNE
+    from sklearn.datasets import load_digits
+
+    # Random state.
+    RS = 20150101
+
+    import matplotlib.pyplot as plt
+    import matplotlib.patheffects as PathEffects
+    import matplotlib
+
+    # We import seaborn to make nice plots.
+    import seaborn as sns
+    sns.set_style('darkgrid')
+    sns.set_palette('muted')
+    sns.set_context("notebook", font_scale=1.5,
+                    rc={"lines.linewidth": 2.5})
+
+    digits_proj = TSNE(random_state=RS).fit_transform(data)
+
+    def scatter(x, colors):
+        # We choose a color palette with seaborn.
+        palette = np.array(sns.color_palette("hls", 10))
+
+        # We create a scatter plot.
+        f = plt.figure(figsize=(8, 8))
+        ax = plt.subplot(aspect='equal')
+        sc = ax.scatter(x[:, 0], x[:, 1], lw=0, s=40,
+                        c=palette[colors.astype(np.int)])
+        plt.xlim(-25, 25)
+        plt.ylim(-25, 25)
+        ax.axis('off')
+        ax.axis('tight')
+
+        # We add the labels for each digit.
+        txts = []
+        for i in range(10):
+            # Position of each label.
+            xtext, ytext = np.median(x[colors == i, :], axis=0)
+            txt = ax.text(xtext, ytext, str(i), fontsize=24)
+            txt.set_path_effects([
+                PathEffects.Stroke(linewidth=5, foreground="w"),
+                PathEffects.Normal()])
+            txts.append(txt)
+
+        return f, ax, sc, txts
+
+    scatter(digits_proj, labels)
+    plt.savefig('digits_tsne-generated.png', dpi=120)
+    plt.show()
