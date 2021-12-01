@@ -4,6 +4,7 @@ from hog_feat_extract import get_feature as get_hog_feat
 from yolo_feat_extract import get_feature as get_yolo_feat
 from cluster import get_kmean_clusters
 import argparse
+import time
 
 
 def get_image_feature(image_path, image_size=416, feat_type='yolov3',
@@ -49,11 +50,14 @@ if __name__ == '__main__':
     feat_type = opt.feat_type
     cluster_nums = opt.clusters
 
+    start_time = time.time()
     if opt.feat:
         get_image_feature(pic_dir, therd_size, feat_type)
     if opt.cluster:
         get_kmean_clusters(pic_dir, cluster_nums, opt.save, feat_type)
     if not (opt.feat or opt.cluster):
         print('please choose one function [feat, cluster]')
+    end_time = time.time()
+    print("time cost:", end_time - start_time)
 
 

@@ -102,13 +102,13 @@ def load_cluster(path):
     return dic
 
 
-def get_kmean_clusters(npy_path, class_nums, save_file_path, npy_type='yolov3', show_3d=True):
+def get_kmean_clusters(npy_path, class_nums, save_file_path, npy_type='yolov3', show_3d=False):
     '''
-
     :param npy_path:
     :param class_nums:
     :param save_file_path:
     :param npy_type:
+    :show_3d show 2d graph
     :return:
     '''
     if 'txt' in os.path.basename(npy_path):
