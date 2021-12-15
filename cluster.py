@@ -113,6 +113,7 @@ def get_kmean_clusters(npy_path, class_nums, save_file_path, npy_type='yolov3', 
     '''
     if 'txt' in os.path.basename(npy_path):
         pic_list = []
+        base_file_list = []
         with open(npy_path, 'r') as file_list:
             lines = file_list.readlines()
             for line in lines:
@@ -123,6 +124,7 @@ def get_kmean_clusters(npy_path, class_nums, save_file_path, npy_type='yolov3', 
                 feat_name = npy_type + '_' + basename
                 feat_path = os.path.join(dirname, feat_name)
                 pic_list.append(feat_path)
+                base_file_list.append(value)
         data_collection = []
         index_cluster = {}
         for index, image_file in tqdm(enumerate(pic_list), total=len(pic_list)):
@@ -134,7 +136,8 @@ def get_kmean_clusters(npy_path, class_nums, save_file_path, npy_type='yolov3', 
             flat_pca_aray = np.array(pca_array).flatten().tolist()
 
             data_collection.append(flat_pca_aray)
-            index_cluster[index] = image_file
+            # index_cluster[index] = image_file
+            index_cluster[index] = base_file_list[index]
         if len(data_collection) == 0:
             print('files not exists!')
             return
