@@ -38,10 +38,10 @@ outfile 存储名称
 
 #### 过滤新增相似数据
 
-> python main.py --filter-extend --pre-data weights\test\npy.txt --ext-data weights\test\npy_0906.txt --ext-thresh 0.995 --ext-save weights\test\test_extend.txt
+> python main.py --filter-extend --pre-data weights\test\file.txt --ext-data weights\test\file_0906.txt --ext-thresh 0.995 --ext-save weights\test\file_extend.txt
 
 filter-extend 功能开关
-pre-data 历史数据npy列表
-ext-data 新增数据npy列表
+pre-data 历史数据图片列表
+ext-data 新增数据图片列表
 ext-thresh 过滤阈值
 ext-save 存储路径

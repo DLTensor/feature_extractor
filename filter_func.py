@@ -12,10 +12,10 @@ from utils_pakege import np
 
 
 def filter_opt(base_list_file, ext_list_file, extend_thresh):
-    base_npy_list, ext_npy_list = get_input_list(base_list_file, ext_list_file)
+    base_npy_list, ext_npy_list, file_base_list, file_ext_list = get_input_list(base_list_file, ext_list_file)
     base_features = []
     ext_files = []
-    base_files = base_npy_list.copy()
+    base_files = file_base_list.copy()
 
     for index, file in tqdm(enumerate(base_npy_list), total=len(base_npy_list)):
         if not os.path.exists(file):
@@ -45,8 +45,8 @@ def filter_opt(base_list_file, ext_list_file, extend_thresh):
         # print(max_score, min_score)
         if max_score < extend_thresh:
             np_base_features = np.concatenate((np_base_features, tmp_flat))
-            ext_files.append(ext_file)
-            base_files.append(ext_file)
+            ext_files.append(file_ext_list[index_ext])
+            base_files.append(file_ext_list[index_ext])
     return ext_files, base_files
 
 
@@ -75,7 +75,9 @@ def get_extend_file(update_list, save_filename):
 
 def get_input_list(base_file, ext_file):
     npy_base_list = []
+    file_base_list = []
     npy_ext_list = []
+    file_ext_list = []
     if not os.path.exists(base_file) or not os.path.exists(ext_file):
         print('your input files not exists!')
         return
@@ -83,19 +85,31 @@ def get_input_list(base_file, ext_file):
         lines = npy_file.readlines()
         for line in lines:
             value = line.strip()
-            npy_base_list.append(value)
+            dirname, basename = os.path.split(value)
+            if not basename[-3:] == 'npy':
+                basename = basename[:-3] + 'npy'
+            feat_name = 'yolov3' + '_' + basename
+            feat_path = os.path.join(dirname, feat_name)
+            file_base_list.append(value)
+            npy_base_list.append(feat_path)
     with open(ext_file, 'r') as npy_file:
         lines = npy_file.readlines()
         for line in lines:
             value = line.strip()
-            npy_ext_list.append(value)
-    return npy_base_list, npy_ext_list
+            file_ext_list.append(value)
+            dirname, basename = os.path.split(value)
+            if not basename[-3:] == 'npy':
+                basename = basename[:-3] + 'npy'
+            feat_name = 'yolov3' + '_' + basename
+            feat_path = os.path.join(dirname, feat_name)
+            npy_ext_list.append(feat_path)
+    return npy_base_list, npy_ext_list, file_base_list, file_ext_list
 
 
 if __name__ == '__main__':
     path = 'E:/dataset/REMAP/TEST/ICE_20210830/data-9/gray/cam0/'
     path_0906 = 'E:/dataset/REMAP/TEST/ICE_20210906/data-10/gray/cam0/'
-    out_ext_list, out_update_list = filter_opt('weights/test/npy.txt', 'weights/test/npy_0906.txt', 0.995)
-    get_extend_file(out_update_list, 'weights/test/extend.txt')
+    out_ext_list, out_update_list = filter_opt('weights/test/file.txt', 'weights/test/file_0906.txt', 0.995)
+    get_extend_file(out_update_list, 'weights/test/file_extend.txt')
     print(out_ext_list)
 
