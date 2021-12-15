@@ -26,6 +26,10 @@ def filter_opt(base_list_file, ext_list_file, extend_thresh):
         flat_pca_aray = np.array(pca_array).flatten().tolist()
         base_features.append(flat_pca_aray)
 
+    if len(base_features) == 0:
+        print('base_features is empty!')
+        return [], []
+
     np_base_features = np.array(base_features)
     for index_ext, ext_file in tqdm(enumerate(ext_npy_list), total=len(ext_npy_list)):
         if not os.path.exists(ext_file):

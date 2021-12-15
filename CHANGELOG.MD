@@ -1,4 +1,6 @@
 #版本更改记录
+## fix: npy empty
+增加npy文件验证机制
 ## amend: amend file format
 数据过滤输入由npy路径修订为图片路径
 ## V1.0.1.1版本 2021.12.14
