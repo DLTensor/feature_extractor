@@ -8,14 +8,16 @@
 from utils_pakege import tqdm
 from utils_pakege import os
 from cluster import load_npy, pca_process
+from cluster import save_cluster as save_match_max
 from utils_pakege import np
 
 
-def filter_opt(base_list_file, ext_list_file, extend_thresh):
+def filter_opt(base_list_file, ext_list_file, extend_thresh, debug=False):
     base_npy_list, ext_npy_list, file_base_list, file_ext_list = get_input_list(base_list_file, ext_list_file)
     base_features = []
     ext_files = []
     base_files = file_base_list.copy()
+    match_max = {}
 
     for index, file in tqdm(enumerate(base_npy_list), total=len(base_npy_list)):
         if not os.path.exists(file):
@@ -44,14 +46,19 @@ def filter_opt(base_list_file, ext_list_file, extend_thresh):
 
         dist_cos, score_cos = cosine_distance(muti_tmp_flat, np_base_features)
         score_array = np.diagonal(score_cos)
+        score_list = score_array.tolist()
         max_score = score_array.max()
+        max_index = score_list.index(max(score_list))
+        match_value = [base_files[max_index], max_score]
+        match_max[file_ext_list[index_ext]] = match_value
         min_score = score_array.min()
         # print(max_score, min_score)
         if max_score < extend_thresh:
-            np_base_features = np.concatenate((np_base_features, tmp_flat))
+            if not debug:
+                np_base_features = np.concatenate((np_base_features, tmp_flat))
+                base_files.append(file_ext_list[index_ext])
             ext_files.append(file_ext_list[index_ext])
-            base_files.append(file_ext_list[index_ext])
-    return ext_files, base_files
+    return ext_files, base_files, match_max
 
 
 def cosine_distance(a, b):
@@ -113,7 +120,9 @@ def get_input_list(base_file, ext_file):
 if __name__ == '__main__':
     path = 'E:/dataset/REMAP/TEST/ICE_20210830/data-9/gray/cam0/'
     path_0906 = 'E:/dataset/REMAP/TEST/ICE_20210906/data-10/gray/cam0/'
-    out_ext_list, out_update_list = filter_opt('weights/test/file.txt', 'weights/test/file_0906.txt', 0.995)
-    get_extend_file(out_update_list, 'weights/test/file_extend.txt')
-    print(out_ext_list)
+    out_ext_list, out_update_list, out_match_max = filter_opt('weights/test/file.txt', 'weights/test/file_0906.txt', 0.995, debug=True)
+    print(out_match_max)
+    # get_extend_file(out_update_list, 'weights/test/file_extend.txt')
+    # print(out_ext_list)
+    save_match_max('weights/test/file_match_case', out_match_max)
 

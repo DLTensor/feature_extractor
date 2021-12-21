@@ -1,4 +1,7 @@
 #版本更改记录
+## fix: cfg&model lost
+修复cfg model找不到的bug
+增加score列表输出
 ## fix: npy empty
 增加npy文件验证机制
 ## amend: amend file format

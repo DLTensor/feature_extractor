@@ -3,6 +3,7 @@ from net_feat_extract import get_feature as get_cnn_feat
 from hog_feat_extract import get_feature as get_hog_feat
 from yolo_feat_extract import get_feature as get_yolo_feat
 from cluster import get_kmean_clusters
+from cluster import  save_cluster as save_match_max
 from filter_func import filter_opt, get_extend_file
 import argparse
 import time
@@ -64,10 +65,12 @@ if __name__ == '__main__':
 
     start_time = time.time()
     if filter_ext:
-        out_ext_list, out_update_list = filter_opt(base_npy_list, ext_npy_list, extend_thresh)
+        out_ext_list, out_update_list, match_max = filter_opt(base_npy_list, ext_npy_list, extend_thresh)
         get_extend_file(out_update_list, extend_file)
+        get_extend_file(out_ext_list, extend_file[:-4] + '_ext.txt')
+        save_match_max(extend_file[:-4] + '_match.txt',match_max)
     if opt.feat:
-        get_image_feature(pic_dir, therd_size, feat_type)
+        get_image_feature(pic_dir, therd_size, feat_type, yolo_model_cfg, weights_path)
     if opt.cluster:
         get_kmean_clusters(pic_dir, cluster_nums, opt.save, feat_type)
     if not (opt.feat or opt.cluster or opt.filter_extend):
