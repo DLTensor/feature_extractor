@@ -15,6 +15,7 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 
+
 class KMEANS:
     def __init__(self, n_cluster, epsilon=1e-3, maxstep=2000):
         self.n_cluster = n_cluster
@@ -84,8 +85,10 @@ class KMEANS:
                 break
         return
 
+
 def save_labels(path, labels):
     np.savetxt(path, labels)
+
 
 def save_cluster(path, dic_cluster):
     js_index_cluster = json.dumps(dic_cluster)
@@ -122,13 +125,18 @@ def get_kmean_clusters(npy_path, class_nums, save_file_path, npy_type='yolov3', 
                 if not basename[-3:] == 'npy':
                     basename = basename[:-3] + 'npy'
                 feat_name = npy_type + '_' + basename
+                dirname = dirname.replace('REMAP', 'FEAT')
+                dirname = dirname.replace('JPEGImages', 'FEAT')
                 feat_path = os.path.join(dirname, feat_name)
                 pic_list.append(feat_path)
                 base_file_list.append(value)
         data_collection = []
         index_cluster = {}
+        issue_files = []
+        root_file, _ = os.path.split(npy_path)
         for index, image_file in tqdm(enumerate(pic_list), total=len(pic_list)):
             if not os.path.exists(image_file):
+                issue_files.append(base_file_list[index])
                 continue
             npy_array = load_npy(image_file)
 
@@ -138,6 +146,13 @@ def get_kmean_clusters(npy_path, class_nums, save_file_path, npy_type='yolov3', 
             data_collection.append(flat_pca_aray)
             # index_cluster[index] = image_file
             index_cluster[index] = base_file_list[index]
+        if len(issue_files) > 0:
+            issue_files_path = os.path.join(root_file, 'error_feat.txt')
+            file = open(issue_files_path, 'w')
+            for index, issue_file in enumerate(issue_files):
+                file.write(str(issue_file) + '\n')
+            file.close()
+            print("save not exists feat files in:", issue_files_path)
         if len(data_collection) == 0:
             print('files not exists!')
             return

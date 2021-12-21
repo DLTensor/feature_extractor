@@ -46,7 +46,7 @@ def detect_image(model, image, img_size=416, conf_thres=0.5, nms_thres=0.5):
     return detections.cpu()
 
 
-def get_feature(pic_dir, therd_size, model_path, weights_path):
+def get_feature(pic_dir, therd_size, model_path, weights_path, save_path=''):
     model = load_model(model_path, weights_path)
     model_name = os.path.basename(model_path)[:-4]
     if 'txt' in os.path.basename(pic_dir):
@@ -56,8 +56,12 @@ def get_feature(pic_dir, therd_size, model_path, weights_path):
             for line in lines:
                 value = line.strip()
                 pic_list.append(value)
-
+        issue_files = []
+        root_file, _ = os.path.split(pic_dir)
         for image_file in tqdm(pic_list):
+            if not os.path.exists(image_file):
+                issue_files.append(image_file)
+                continue
             img = skimage.io.imread(image_file)
             if len(img.shape) == 2:
                 image = np.expand_dims(img, axis=2)
@@ -66,9 +70,24 @@ def get_feature(pic_dir, therd_size, model_path, weights_path):
             feats = detect_image(model, img, therd_size)
             feature_array = feats.data.numpy()
 
-            dst, basename = os.path.split(image_file)
+            dst_split, basename = os.path.split(image_file)
+            if save_path == '':
+                dst = dst_split.replace('REMAP', 'FEAT')
+                dst = dst_split.replace('JPEGImages', 'FEAT')
+            else:
+                dst = save_path
+            if not os.path.exists(dst):
+                os.makedirs(dst)
             dst_npy = os.path.join(dst, model_name + '_' + basename[:-3] + 'npy')
-            np.save(dst_npy, feature_array)
+            if not os.path.exists(dst_npy):
+                np.save(dst_npy, feature_array)
+        if len(issue_files) > 0:
+            issue_files_path = os.path.join(root_file, 'error_images.txt')
+            file = open(issue_files_path, 'w')
+            for index, issue_file in enumerate(issue_files):
+                file.write(str(issue_file) + '\n')
+            file.close()
+            print("save not exists images files in:", issue_files_path)
         return
     else:
         img = skimage.io.imread(pic_dir)

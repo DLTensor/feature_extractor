@@ -27,7 +27,8 @@ feat-type 提取的特征类别
 file 数据路径   
 cluster 类别数量    
 feat-type 使用的特征类别   
-save 输出文件的存储路径  
+save 输出文件的存储路径 
+同时会输出不存在的文件列表，与数据路径同目录
 
 ### 在聚类数据中随机提取一个数据
 > python get_one_index.py --file weights/cluster_test/dict_filename.txt --save ./weights/cluster_test/ --outfile one_index_10000.txt
@@ -35,6 +36,7 @@ save 输出文件的存储路径
 file 聚类生成的字典
 save 存储路径
 outfile 存储名称
+同时会输出不存在的文件列表，与数据路径同目录
 
 #### 过滤新增相似数据
 

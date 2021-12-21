@@ -11,7 +11,7 @@ import time
 
 def get_image_feature(image_path, image_size=416, feat_type='yolov3',
                       yolo_model='./weights/indemind/yolov3.cfg',
-                      weights_path='./weights/indemind/yolov3_best.weights'):
+                      weights_path='./weights/indemind/yolov3_best.weights', save_path=''):
     '''
     :param image_path:
     :param image_size:
@@ -26,7 +26,7 @@ def get_image_feature(image_path, image_size=416, feat_type='yolov3',
     elif feat_type == 'hog':
         get_hog_feat(pic_dir, therd_size, feat_type)
     elif feat_type == 'yolov3':
-        get_yolo_feat(pic_dir, therd_size, yolo_model, weights_path)
+        get_yolo_feat(pic_dir, therd_size, yolo_model, weights_path, save_path)
     else:
         print('please choose feature type in [resnet50, resnet101, cnn, hog, yolov3]!!')
         return
@@ -41,6 +41,7 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=str, default='./weights/indemind/yolov3.cfg', help='cfg file path')
     parser.add_argument('--feat', action='store_true', help='feat extract func')
     parser.add_argument('--feat-type', type=str, default='yolov3', help='feat extract type')
+    parser.add_argument('--feat-save', type=str, default='', help='feat save path')
     parser.add_argument('--cluster', action='store_true', help='kmeans func')
     parser.add_argument('--save', type=str, default='./clusters', help='cluster dict file')
     parser.add_argument('--clusters', type=int, default='2', help='cluster nums')
@@ -55,6 +56,7 @@ if __name__ == '__main__':
     pic_dir, therd_size = opt.file, opt.size
     yolo_model_cfg, weights_path = opt.cfg, opt.weights
     feat_type = opt.feat_type
+    feat_save_path = opt.feat_save
     cluster_nums = opt.clusters
 
     filter_ext = opt.filter_extend
@@ -68,9 +70,9 @@ if __name__ == '__main__':
         out_ext_list, out_update_list, match_max = filter_opt(base_npy_list, ext_npy_list, extend_thresh)
         get_extend_file(out_update_list, extend_file)
         get_extend_file(out_ext_list, extend_file[:-4] + '_ext.txt')
-        save_match_max(extend_file[:-4] + '_match.txt',match_max)
+        save_match_max(extend_file[:-4] + '_match.txt', match_max)
     if opt.feat:
-        get_image_feature(pic_dir, therd_size, feat_type, yolo_model_cfg, weights_path)
+        get_image_feature(pic_dir, therd_size, feat_type, yolo_model_cfg, weights_path, feat_save_path)
     if opt.cluster:
         get_kmean_clusters(pic_dir, cluster_nums, opt.save, feat_type)
     if not (opt.feat or opt.cluster or opt.filter_extend):
