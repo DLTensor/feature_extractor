@@ -30,7 +30,7 @@ def filter_opt(base_list_file, ext_list_file, extend_thresh, debug=False):
 
     if len(base_features) == 0:
         print('base_features is empty!')
-        return [], []
+        return [], [], []
 
     np_base_features = np.array(base_features)
     for index_ext, ext_file in tqdm(enumerate(ext_npy_list), total=len(ext_npy_list)):
@@ -92,11 +92,20 @@ def get_input_list(base_file, ext_file):
     if not os.path.exists(base_file) or not os.path.exists(ext_file):
         print('your input files not exists!')
         return
+    issue_base_files = []
+    issue_ext_files = []
+    root_base_file, _ = os.path.split(base_file)
+    root_ext_file, _ = os.path.split(ext_file)
     with open(base_file, 'r') as npy_file:
         lines = npy_file.readlines()
         for line in lines:
             value = line.strip()
+            if not os.path.exists(value):
+                issue_base_files.append(value)
+                continue
             dirname, basename = os.path.split(value)
+            dirname = dirname.replace('REMAP', 'FEAT')
+            dirname = dirname.replace('JPEGImages', 'FEAT')
             if not basename[-3:] == 'npy':
                 basename = basename[:-3] + 'npy'
             feat_name = 'yolov3' + '_' + basename
@@ -107,13 +116,33 @@ def get_input_list(base_file, ext_file):
         lines = npy_file.readlines()
         for line in lines:
             value = line.strip()
+            if not os.path.exists(value):
+                issue_ext_files.append(value)
+                continue
             file_ext_list.append(value)
             dirname, basename = os.path.split(value)
+            dirname = dirname.replace('REMAP', 'FEAT')
+            dirname = dirname.replace('JPEGImages', 'FEAT')
             if not basename[-3:] == 'npy':
                 basename = basename[:-3] + 'npy'
             feat_name = 'yolov3' + '_' + basename
             feat_path = os.path.join(dirname, feat_name)
             npy_ext_list.append(feat_path)
+
+    if len(issue_base_files) > 0:
+        issue_files_path = os.path.join(root_base_file, 'error_base_file.txt')
+        file = open(issue_files_path, 'w')
+        for index, issue_file in enumerate(issue_base_files):
+            file.write(str(issue_file) + '\n')
+        file.close()
+        print("save not exists base files in:", issue_files_path)
+    if len(issue_ext_files) > 0:
+        issue_files_path = os.path.join(root_ext_file, 'error_ext_file.txt')
+        file = open(issue_files_path, 'w')
+        for index, issue_file in enumerate(issue_ext_files):
+            file.write(str(issue_file) + '\n')
+        file.close()
+        print("save not exists ext files in:", issue_files_path)
     return npy_base_list, npy_ext_list, file_base_list, file_ext_list
 
 

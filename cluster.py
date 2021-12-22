@@ -100,7 +100,12 @@ def save_cluster(path, dic_cluster):
 def load_cluster(path):
     file = open(path, 'r')
     js = file.read()
-    dic = json.loads(js)
+    try:
+        dic = json.loads(js)
+    except ValueError:
+        print('your file is not a dict file!')
+        return {}
+
     file.close()
     return dic
 

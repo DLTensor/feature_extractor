@@ -1,4 +1,6 @@
 #版本更改记录
+## add error process
+增加文件异常等错误处理机制
 ## add introductions
 增加输出文件说明
 ## fix:image|npy lost

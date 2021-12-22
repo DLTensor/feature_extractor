@@ -6,6 +6,9 @@ import random
 
 def extract_one_path(input_file_name, save_path, name):
     path = input_file_name
+    if not os.path.exists(path):
+        print('your input file not exists!')
+        return [], []
 
     cluster_path = os.path.join(save_path, name)
     save_file = open(cluster_path, 'w')

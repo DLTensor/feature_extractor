@@ -86,6 +86,7 @@ pre-data 历史数据图片列表
 ext-data 新增数据图片列表
 ext-thresh 过滤阈值
 ext-save 存储路径
+同时会输出不存在的文件列表，与数据路径同目录
 
 输出文件：指定的ext-save的文件路径，指定存储路径_ext.txt 指定存储路径_match.txt
 指定的ext-save的文件路径：
