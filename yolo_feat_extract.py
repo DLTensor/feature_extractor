@@ -9,6 +9,7 @@ from utils.utils import load_classes, rescale_boxes, non_max_suppression, print_
 from utils.datasets import ImageFolder
 from utils.transforms import Resize, DEFAULT_TRANSFORMS
 from utils_pakege import *
+import cv2
 
 
 def detect_image(model, image, img_size=416, conf_thres=0.5, nms_thres=0.5):
@@ -62,6 +63,9 @@ def get_feature(pic_dir, therd_size, model_path, weights_path, save_path=''):
             if not os.path.exists(image_file):
                 issue_files.append(image_file)
                 continue
+            if cv2.imread(image_file) is None:
+                print(image_file)
+                continue
             img = skimage.io.imread(image_file)
             if len(img.shape) == 2:
                 image = np.expand_dims(img, axis=2)
@@ -73,7 +77,6 @@ def get_feature(pic_dir, therd_size, model_path, weights_path, save_path=''):
             dst_split, basename = os.path.split(image_file)
             if save_path == '':
                 dst = dst_split.replace('REMAP', 'FEAT')
-                dst = dst_split.replace('JPEGImages', 'FEAT')
             else:
                 dst = save_path
             if not os.path.exists(dst):

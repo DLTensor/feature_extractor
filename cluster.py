@@ -131,7 +131,6 @@ def get_kmean_clusters(npy_path, class_nums, save_file_path, npy_type='yolov3', 
                     basename = basename[:-3] + 'npy'
                 feat_name = npy_type + '_' + basename
                 dirname = dirname.replace('REMAP', 'FEAT')
-                dirname = dirname.replace('JPEGImages', 'FEAT')
                 feat_path = os.path.join(dirname, feat_name)
                 pic_list.append(feat_path)
                 base_file_list.append(value)
